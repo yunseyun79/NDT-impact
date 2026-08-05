@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>스마트 NDT 타격음 진단기</title>
+    <title>두들김 현장 타격음 수집시스템</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; background-color: #f4f7f6; padding: 20px; color: #333; margin: 0; }
         h1 { color: #2c3e50; margin-bottom: 5px; font-size: 24px; }
@@ -39,8 +39,8 @@
     </style>
 </head>
 <body>
-    <h1>스마트 타격음 조사 시스템</h1>
-    <p class="subtitle">현장 정보와 타격음 데이터를 하나의 CSV로 구조화합니다.</p>
+    <h1>현장 타격음 수집시스템</h1>
+    <p class="subtitle">현장 정보와 여러 타격음 데이터를 하나의 CSV로 구조화합니다.</p>
     
     <div id="testCounter">현재 대기 중: 1번째 조사</div>
 
@@ -54,26 +54,26 @@
             </div>
             <div class="input-row">
                 <label for="bridgeInput">대상 교량</label>
-                <input type="text" id="bridgeInput" class="input-field" placeholder="예: 한강대교">
+                <input type="text" id="bridgeInput" class="input-field" placeholder="예: 수내교 판교장향">
             </div>
             <div class="input-row">
                 <label for="locationInput">조사 위치</label>
-                <input type="text" id="locationInput" class="input-field" placeholder="예: P1 교각">
+                <input type="text" id="locationInput" class="input-field" placeholder="예: S1">
             </div>
             <div class="input-row">
                 <label for="descInput">조사 내용</label>
-                <input type="text" id="descInput" class="input-field" placeholder="예: 슬래브 하부 타격">
+                <input type="text" id="descInput" class="input-field" placeholder="예: 코핑부 하부 타격">
             </div>
 
             <div class="divider"></div>
-            <div class="help-text">※ 부재 정보를 모를 경우 0을 유지하세요.</div>
+            <div class="help-text">※ 부재 및 열화 정보를 모를 경우 0을 유지하세요.</div>
             
             <div class="input-row">
                 <label for="thicknessInput">부재 두께 (cm)</label>
                 <input type="number" id="thicknessInput" class="input-field" value="0" step="0.1">
             </div>
             <div class="input-row">
-                <label for="defectInput">예상 깊이 (cm)</label>
+                <label for="defectInput">예상 열화 깊이 (cm)</label>
                 <input type="number" id="defectInput" class="input-field" value="0" step="0.1">
             </div>
             
