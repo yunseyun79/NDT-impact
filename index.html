@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>두들김조사 타격음 수집기</title>
+    <title>스마트 NDT 타격음 진단기</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; background-color: #f4f7f6; padding: 20px; color: #333; margin: 0; }
         h1 { color: #2c3e50; margin-bottom: 5px; font-size: 24px; }
@@ -13,10 +13,12 @@
         .active-group { display: flex; }
         
         /* 입력 폼 스타일 */
-        .info-box { background-color: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; text-align: center; width: 100%; max-width: 400px; box-sizing: border-box; }
-        .input-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 16px; font-weight: bold; }
-        .input-field { padding: 8px; font-size: 16px; border: 1px solid #bdc3c7; border-radius: 6px; width: 100px; text-align: center; }
-        .help-text { font-size: 13px; color: #e74c3c; margin-bottom: 20px; font-weight: bold; }
+        .info-box { background-color: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; text-align: center; width: 100%; max-width: 450px; box-sizing: border-box; }
+        .input-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 15px; font-weight: bold; }
+        .input-field { padding: 8px; font-size: 15px; border: 1px solid #bdc3c7; border-radius: 6px; width: 60%; box-sizing: border-box;}
+        
+        .divider { height: 1px; background-color: #ecf0f1; margin: 20px 0; }
+        .help-text { font-size: 13px; color: #e74c3c; margin-bottom: 15px; font-weight: bold; }
         
         button { padding: 15px 25px; font-size: 18px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; transition: transform 0.1s, opacity 0.3s; }
         button:active { transform: scale(0.95); }
@@ -37,27 +39,47 @@
     </style>
 </head>
 <body>
-    <h1>현장 타격음 수집기</h1>
-    <p class="subtitle">타격 후 타격음 데이터를 하나의 CSV로 통합합니다.</p>
+    <h1>스마트 타격음 조사 시스템</h1>
+    <p class="subtitle">현장 정보와 타격음 데이터를 하나의 CSV로 구조화합니다.</p>
     
     <div id="testCounter">현재 대기 중: 1번째 조사</div>
 
-    <!-- 0단계: 최초 1회 부재 정보 및 수집 시간 설정 -->
+    <!-- 0단계: 최초 1회 정보 입력 -->
     <div id="step0" class="control-group active-group" style="flex-direction: column; align-items: center;">
         <div class="info-box">
-            <div class="help-text">※ 판단하기 어려우거나 모를 경우 0을 입력하세요.</div>
             
+            <!-- 신규 추가된 현장 정보 -->
+            <div class="input-row">
+                <label for="dateInput">조사 일자</label>
+                <input type="date" id="dateInput" class="input-field">
+            </div>
+            <div class="input-row">
+                <label for="bridgeInput">대상 교량</label>
+                <input type="text" id="bridgeInput" class="input-field" placeholder="예: 한강대교">
+            </div>
+            <div class="input-row">
+                <label for="locationInput">조사 위치</label>
+                <input type="text" id="locationInput" class="input-field" placeholder="예: P1 교각">
+            </div>
+            <div class="input-row">
+                <label for="descInput">조사 내용</label>
+                <input type="text" id="descInput" class="input-field" placeholder="예: 슬래브 하부 타격">
+            </div>
+
+            <div class="divider"></div>
+            <div class="help-text">※ 부재 정보를 모를 경우 0을 유지하세요.</div>
+            
+            <!-- 기존 부재 정보 -->
             <div class="input-row">
                 <label for="thicknessInput">부재 두께 (cm)</label>
                 <input type="number" id="thicknessInput" class="input-field" value="0" step="0.1">
             </div>
-            
             <div class="input-row">
-                <label for="defectInput">예상 열화 깊이 (cm)</label>
+                <label for="defectInput">예상 깊이 (cm)</label>
                 <input type="number" id="defectInput" class="input-field" value="0" step="0.1">
             </div>
             
-            <div style="margin-top: 20px; margin-bottom: 10px; font-size: 15px; color: #555;">아래에서 수집 시간을 선택하면 설정이 완료됩니다.</div>
+            <div style="margin-top: 20px; margin-bottom: 10px; font-size: 14px; color: #555;">수집 시간을 선택하면 조사가 시작됩니다.</div>
             
             <div style="display: flex; gap: 10px; justify-content: center;">
                 <button class="time-btn" onclick="setInitialData(3)">3초</button>
@@ -88,9 +110,12 @@
         <canvas id="analyserCanvas"></canvas>
     </div>
 
-    <div id="status">부재 정보 입력 후 수집 시간을 선택해 주세요.</div>
+    <div id="status">현장 정보를 입력하고 수집 시간을 선택해 주세요.</div>
 
     <script>
+        // 오늘 날짜 기본 세팅 (YYYY-MM-DD)
+        document.getElementById('dateInput').value = new Date().toLocaleDateString('en-CA');
+
         // UI 요소
         const step0 = document.getElementById('step0');
         const step1 = document.getElementById('step1');
@@ -106,15 +131,12 @@
         const canvas = document.getElementById('analyserCanvas');
         const canvasCtx = canvas.getContext('2d');
 
-        // 오디오 시스템 변수
+        // 오디오 및 메타데이터 변수
         let audioContext, stream, microphone, processor, analyser;
         let animationId;
         
-        // 데이터 저장소
+        let metaData = {}; // 사용자 입력 메타데이터 저장 객체
         let durationSeconds = 0; 
-        let memberThickness = "0"; // 부재 두께
-        let defectDepth = "0";     // 열화 깊이
-        
         let sampleRate = 0;
         let targetSamples = 0;
         
@@ -125,33 +147,40 @@
         let isRecording = false;
         let testCount = 1;
 
-        // UI 전환 함수
         function showStep(stepId) {
             step0.classList.remove('active-group');
             step1.classList.remove('active-group');
             step2.classList.remove('active-group');
             step3.classList.remove('active-group');
-            
-            if(stepId !== 'none') {
-                document.getElementById(stepId).classList.add('active-group');
-            }
+            if(stepId !== 'none') document.getElementById(stepId).classList.add('active-group');
         }
 
-        // 0단계: 부재 정보 및 시간 설정 완료
+        // CSV에 쉼표(,)가 들어가면 열이 깨지므로 큰따옴표로 감싸는 함수
+        function escapeCSV(str) {
+            if (str === null || str === undefined) return '""';
+            return '"' + String(str).replace(/"/g, '""') + '"';
+        }
+
+        // 0단계: 메타정보 저장 및 시간 설정
         function setInitialData(seconds) {
-            // 입력값 가져오기 (비어있으면 0으로 처리)
-            memberThickness = document.getElementById('thicknessInput').value || "0";
-            defectDepth = document.getElementById('defectInput').value || "0";
+            metaData = {
+                date: document.getElementById('dateInput').value,
+                bridge: document.getElementById('bridgeInput').value || "-",
+                location: document.getElementById('locationInput').value || "-",
+                description: document.getElementById('descInput').value || "-",
+                thickness: document.getElementById('thicknessInput').value || "0",
+                defect: document.getElementById('defectInput').value || "0",
+                time: seconds
+            };
             
             durationSeconds = seconds;
             
-            status.innerText = `두께: ${memberThickness}cm / 깊이: ${defectDepth}cm / 수집: ${seconds}초 설정됨.`;
+            status.innerText = `[${metaData.bridge} / ${metaData.location}] 설정 완료. 마이크를 허용해 주세요.`;
             testCounter.style.display = 'block';
             startBtn.innerText = `1번째 조사 시작 (${durationSeconds}초)`;
             showStep('step1');
         }
 
-        // 오디오 권한 셋업 (최초 1번째 조사 시작 클릭 시 실행)
         async function initAudio() {
             if (audioContext) return; 
             try {
@@ -180,7 +209,6 @@
                             currentTestData.push(inputData[i]); 
                         }
                     }
-                    
                     if (currentTestData.length >= targetSamples) {
                         isRecording = false;
                         setTimeout(onRecordingComplete, 0); 
@@ -190,101 +218,92 @@
                 resizeCanvas();
                 window.addEventListener('resize', resizeCanvas);
                 drawOscilloscope(); 
-
             } catch (err) {
                 status.innerText = "마이크 권한 거부 또는 오류 발생";
                 status.style.backgroundColor = "#fadbd8";
                 status.style.color = "#c0392b";
-                console.error(err);
             }
         }
 
-        // 1단계: 수집 시작 버튼 클릭
         startBtn.addEventListener('click', async () => {
             await initAudio(); 
-            
-            if (audioContext.state === 'suspended') {
-                await audioContext.resume();
-            }
+            if (audioContext.state === 'suspended') await audioContext.resume();
             
             currentTestData = [];
             isRecording = true; 
-            
-            status.innerText = `🔴 수집 중... 구조물을 타격하세요 (${durationSeconds}초)`;
+            status.innerText = `🔴 수집 중... 타격하세요 (${durationSeconds}초)`;
             status.style.backgroundColor = "#fadbd8";
             status.style.color = "#c0392b";
             showStep('none');
         });
 
-        // 수집 완료
         function onRecordingComplete() {
             allTestsData.push(currentTestData);
-            
-            status.innerText = `✅ ${durationSeconds}초 수집 완료. 타격부의 상태를 판별해 주세요.`;
+            status.innerText = `✅ ${durationSeconds}초 수집 완료. 타격부 상태를 판별해 주세요.`;
             status.style.backgroundColor = "#d4efdf";
             status.style.color = "#27ae60";
-            
             showStep('step2');
         }
 
-        // 2단계: 판별 버튼 클릭
         judgeGoodBtn.addEventListener('click', () => saveJudgment("true"));
         judgeBadBtn.addEventListener('click', () => saveJudgment("false"));
 
         function saveJudgment(result) {
             judgments.push(result); 
-            
             status.innerText = `현재까지 총 ${testCount}회 조사됨. 다음 행동을 선택하세요.`;
             status.style.backgroundColor = "#fcf3cf";
             status.style.color = "#d68910";
-            
             showStep('step3');
         }
 
-        // 3단계: 다음 조사 버튼 클릭 (부재 정보 및 시간 설정은 건너뜀)
         nextTestBtn.addEventListener('click', () => {
             testCount++;
             testCounter.innerText = `현재 대기 중: ${testCount}번째 조사`;
             startBtn.innerText = `${testCount}번째 조사 시작 (${durationSeconds}초)`;
-            
             status.innerText = "조사 시작 버튼을 누르고 타격하세요.";
             status.style.backgroundColor = "#e8f6f3";
             status.style.color = "#16a085";
             
             canvasCtx.fillStyle = '#1e272e';
             canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
-            
             showStep('step1'); 
         });
 
-        // 3단계: 조사 종료 (CSV 다운로드)
         endTestBtn.addEventListener('click', () => {
             status.innerText = "데이터를 CSV로 변환 중입니다...";
             generateAndDownloadCSV();
         });
 
-        // CSV 생성
         function generateAndDownloadCSV() {
             if (allTestsData.length === 0) return;
 
-            // 헤더의 마지막에 'thickness'와 'defect' 추가
-            const header = ["time", ...judgments, "thickness", "defect"].join(",");
-            const rows = [header];
+            // 1. CSV 상단 구조화: 메타데이터 헤더 (1행) 및 값 (2행)
+            const metaHeader = ["일자", "교량", "위치", "내용", "부재 두께(cm)", "예상 열화 깊이(cm)", "수집시간(초)"].join(",");
+            const metaValues = [
+                escapeCSV(metaData.date), 
+                escapeCSV(metaData.bridge), 
+                escapeCSV(metaData.location), 
+                escapeCSV(metaData.description), 
+                metaData.thickness, 
+                metaData.defect, 
+                metaData.time
+            ].join(",");
+
+            // 2. 데이터 영역 헤더 (3행)
+            const dataHeader = ["time", ...judgments].join(",");
+            
+            // 행(Row) 조립
+            const rows = [metaHeader, metaValues, dataHeader];
+            
             const timeStep = 1.0 / sampleRate;
 
+            // 3. 음향 파형 데이터 (4행부터~)
             for (let i = 0; i < targetSamples; i++) {
                 const exactTime = (i * timeStep).toFixed(6); 
-                
                 const rowData = [exactTime];
-                // 각 조사별 진폭 데이터 추가
                 for (let testIdx = 0; testIdx < allTestsData.length; testIdx++) {
                     rowData.push(allTestsData[testIdx][i].toFixed(5));
                 }
-                
-                // 모든 행의 마지막 2개 열에 처음에 입력한 부재 정보 반복 추가
-                rowData.push(memberThickness);
-                rowData.push(defectDepth);
-                
                 rows.push(rowData.join(","));
             }
 
@@ -294,17 +313,16 @@
             
             const link = document.createElement("a");
             link.setAttribute("href", url);
-            link.setAttribute("download", `NDT_impact_data_${Date.now()}.csv`);
+            link.setAttribute("download", `NDT_${metaData.bridge}_${metaData.location}_${Date.now()}.csv`);
             link.style.visibility = 'hidden';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
             
-            status.innerText = `총 ${testCount}회의 조사가 저장되었습니다. (새로운 부재 조사 시 새로고침 하세요)`;
+            status.innerText = `총 ${testCount}회의 조사가 하나의 파일로 저장되었습니다.`;
             showStep('none'); 
         }
 
-        // 파형 시각화
         function drawOscilloscope() {
             animationId = requestAnimationFrame(drawOscilloscope);
             if (!isRecording) return; 
@@ -314,21 +332,18 @@
 
             canvasCtx.fillStyle = '#1e272e';
             canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
-            
             canvasCtx.lineWidth = 1;
             canvasCtx.strokeStyle = '#485460';
             canvasCtx.beginPath();
             canvasCtx.moveTo(0, canvas.height / 2);
             canvasCtx.lineTo(canvas.width, canvas.height / 2);
             canvasCtx.stroke();
-
             canvasCtx.lineWidth = 2;
             canvasCtx.strokeStyle = '#0fb9b1';
             canvasCtx.beginPath();
             
             const sliceWidth = canvas.width * 1.0 / analyser.fftSize;
             let x = 0;
-            
             for (let i = 0; i < analyser.fftSize; i++) {
                 const v = dataArray[i];
                 const y = (canvas.height / 2) - (v * canvas.height / 2);
