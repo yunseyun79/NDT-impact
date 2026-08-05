@@ -3,14 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>두들김 현장 타격음 수집시스템</title>
+    <title>스마트 NDT 타격음 진단기</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; background-color: #f4f7f6; padding: 20px; color: #333; margin: 0; }
         h1 { color: #2c3e50; margin-bottom: 5px; font-size: 24px; }
         p.subtitle { color: #7f8c8d; margin-bottom: 20px; font-size: 14px; }
         
-        .control-group { margin-bottom: 20px; display: none; justify-content: center; gap: 10px; flex-wrap: wrap; }
+        .control-group { margin-bottom: 20px; display: none; justify-content: center; gap: 10px; flex-wrap: wrap; flex-direction: column; align-items: center; }
         .active-group { display: flex; }
+        
+        /* 버튼 그룹 내부 정렬용 */
+        .btn-row { display: flex; justify-content: center; gap: 10px; width: 100%; }
         
         /* 입력 폼 스타일 */
         .info-box { background-color: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; text-align: center; width: 100%; max-width: 450px; box-sizing: border-box; }
@@ -19,6 +22,7 @@
         
         .divider { height: 1px; background-color: #ecf0f1; margin: 20px 0; }
         .help-text { font-size: 13px; color: #e74c3c; margin-bottom: 15px; font-weight: bold; }
+        .instruction-text { font-size: 16px; font-weight: bold; color: #2c3e50; margin-bottom: 10px; }
         
         button { padding: 15px 25px; font-size: 18px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; transition: transform 0.1s, opacity 0.3s; }
         button:active { transform: scale(0.95); }
@@ -31,21 +35,21 @@
         #nextTestBtn { background-color: #f39c12; color: white; flex: 1; max-width: 180px; }
         #endTestBtn { background-color: #8e44ad; color: white; flex: 1; max-width: 180px; }
         
-        #graphContainer { background-color: white; padding: 10px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        #graphContainer { background-color: white; padding: 10px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; width: 100%; max-width: 450px; box-sizing: border-box; margin-left: auto; margin-right: auto;}
         #analyserCanvas { width: 100%; height: 250px; background-color: #1e272e; border-radius: 8px; }
         
-        #status { margin-top: 15px; font-size: 16px; font-weight: bold; padding: 10px; border-radius: 8px; background-color: #e8f6f3; color: #16a085;}
+        #status { margin-top: 15px; font-size: 16px; font-weight: bold; padding: 10px; border-radius: 8px; background-color: #e8f6f3; color: #16a085; width: 100%; max-width: 450px; margin-left: auto; margin-right: auto; box-sizing: border-box;}
         #testCounter { font-size: 16px; color: #555; margin-bottom: 15px; font-weight: bold; display: none;}
     </style>
 </head>
 <body>
-    <h1>현장 타격음 수집시스템</h1>
-    <p class="subtitle">현장 정보와 여러 타격음 데이터를 하나의 CSV로 구조화합니다.</p>
+    <h1>스마트 타격음 조사 시스템</h1>
+    <p class="subtitle">현장 정보와 타격음 데이터를 하나의 CSV로 구조화합니다.</p>
     
     <div id="testCounter">현재 대기 중: 1번째 조사</div>
 
     <!-- 0단계: 최초 1회 정보 입력 -->
-    <div id="step0" class="control-group active-group" style="flex-direction: column; align-items: center;">
+    <div id="step0" class="control-group active-group">
         <div class="info-box">
             
             <div class="input-row">
@@ -54,32 +58,32 @@
             </div>
             <div class="input-row">
                 <label for="bridgeInput">대상 교량</label>
-                <input type="text" id="bridgeInput" class="input-field" placeholder="예: 수내교 판교장향">
+                <input type="text" id="bridgeInput" class="input-field" placeholder="예: 한강대교">
             </div>
             <div class="input-row">
                 <label for="locationInput">조사 위치</label>
-                <input type="text" id="locationInput" class="input-field" placeholder="예: S1">
+                <input type="text" id="locationInput" class="input-field" placeholder="예: P1 교각">
             </div>
             <div class="input-row">
                 <label for="descInput">조사 내용</label>
-                <input type="text" id="descInput" class="input-field" placeholder="예: 코핑부 하부 타격">
+                <input type="text" id="descInput" class="input-field" placeholder="예: 슬래브 하부 타격">
             </div>
 
             <div class="divider"></div>
-            <div class="help-text">※ 부재 및 열화 정보를 모를 경우 0을 유지하세요.</div>
+            <div class="help-text">※ 부재 정보를 모를 경우 0을 유지하세요.</div>
             
             <div class="input-row">
                 <label for="thicknessInput">부재 두께 (cm)</label>
                 <input type="number" id="thicknessInput" class="input-field" value="0" step="0.1">
             </div>
             <div class="input-row">
-                <label for="defectInput">예상 열화 깊이 (cm)</label>
+                <label for="defectInput">예상 깊이 (cm)</label>
                 <input type="number" id="defectInput" class="input-field" value="0" step="0.1">
             </div>
             
             <div style="margin-top: 20px; margin-bottom: 10px; font-size: 14px; color: #555;">수집 시간을 선택하면 조사가 시작됩니다.</div>
             
-            <div style="display: flex; gap: 10px; justify-content: center;">
+            <div class="btn-row">
                 <button class="time-btn" onclick="setInitialData(3)">3초</button>
                 <button class="time-btn" onclick="setInitialData(4)">4초</button>
                 <button class="time-btn" onclick="setInitialData(5)">5초</button>
@@ -94,14 +98,19 @@
 
     <!-- 2단계: 상태 판별 -->
     <div id="step2" class="control-group">
-        <button id="judgeGoodBtn">✅ 건전부</button>
-        <button id="judgeBadBtn">❌ 열화부</button>
+        <div class="instruction-text">🎯 예상되는 상태를 평가해 주세요.</div>
+        <div class="btn-row">
+            <button id="judgeGoodBtn">✅ 건전부</button>
+            <button id="judgeBadBtn">❌ 열화부</button>
+        </div>
     </div>
 
     <!-- 3단계: 다음 행동 선택 -->
     <div id="step3" class="control-group">
-        <button id="nextTestBtn">🔄 다음 조사</button>
-        <button id="endTestBtn">💾 조사 종료 (CSV 다운)</button>
+        <div class="btn-row">
+            <button id="nextTestBtn">🔄 다음 조사</button>
+            <button id="endTestBtn">💾 조사 종료 (CSV 다운)</button>
+        </div>
     </div>
 
     <div id="graphContainer">
@@ -158,7 +167,6 @@
             return '"' + String(str).replace(/"/g, '""') + '"';
         }
 
-        // 0단계: 메타정보 저장 및 시간 설정
         function setInitialData(seconds) {
             metaData = {
                 date: document.getElementById('dateInput').value,
@@ -228,7 +236,7 @@
             
             currentTestData = [];
             isRecording = true; 
-            status.innerText = `🔴 수집 중 한 번만 타격하세요 (${durationSeconds}초)`;
+            status.innerText = `🔴 수집 중... 타격하세요 (${durationSeconds}초)`;
             status.style.backgroundColor = "#fadbd8";
             status.style.color = "#c0392b";
             showStep('none');
@@ -236,13 +244,12 @@
 
         function onRecordingComplete() {
             allTestsData.push(currentTestData);
-            status.innerText = `✅ ${durationSeconds}초 수집 완료. 타격부 상태를 판별해 주세요.`;
+            status.innerText = `✅ ${durationSeconds}초 수집 완료.`;
             status.style.backgroundColor = "#d4efdf";
             status.style.color = "#27ae60";
             showStep('step2');
         }
 
-        // 판별 버튼 클릭 시 '건전부', '열화부' 텍스트로 저장되도록 수정
         judgeGoodBtn.addEventListener('click', () => saveJudgment("건전부"));
         judgeBadBtn.addEventListener('click', () => saveJudgment("열화부"));
 
@@ -275,7 +282,6 @@
         function generateAndDownloadCSV() {
             if (allTestsData.length === 0) return;
 
-            // 1. CSV 상단 구조화: 메타데이터 헤더 (1행) 및 값 (2행)
             const metaHeader = ["일자", "교량", "위치", "내용", "부재 두께(cm)", "예상 열화 깊이(cm)", "수집시간(초)"].join(",");
             const metaValues = [
                 escapeCSV(metaData.date), 
@@ -287,15 +293,10 @@
                 metaData.time
             ].join(",");
 
-            // 2. 데이터 영역 헤더 (3행) - 여기에 '건전부', '열화부'가 들어갑니다.
             const dataHeader = ["time", ...judgments].join(",");
-            
-            // 행(Row) 조립
             const rows = [metaHeader, metaValues, dataHeader];
-            
             const timeStep = 1.0 / sampleRate;
 
-            // 3. 음향 파형 데이터 (4행부터~)
             for (let i = 0; i < targetSamples; i++) {
                 const exactTime = (i * timeStep).toFixed(6); 
                 const rowData = [exactTime];
@@ -306,7 +307,6 @@
             }
 
             const csvContent = rows.join("\n");
-            // 엑셀에서 한글 깨짐 방지를 위해 BOM(\uFEFF) 추가
             const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             
